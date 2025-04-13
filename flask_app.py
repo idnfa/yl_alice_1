@@ -24,6 +24,8 @@ def main():
 
 def handle_dialog(req, res):
     user_id = req['session']['user_id']
+    if user_id not in sessionStorage:
+        sessionStorage[user_id] = {'rabbit': False}
     if req['session']['new']:
         sessionStorage[user_id] = {
             'suggests': [
@@ -83,12 +85,6 @@ def get_suggests(user_id):
         suggests.append({
             "title": "Ладно",
             "url": "https://market.yandex.ru/search?text=слон",
-            "hide": True
-        })
-    if len(suggests) < 3 and sessionStorage[user_id]['rabbit']:
-        suggests.append({
-            "title": "Ладно",
-            "url": "https://market.yandex.ru/search?text=кролик",
             "hide": True
         })
 
