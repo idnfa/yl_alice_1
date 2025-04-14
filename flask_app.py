@@ -3,6 +3,7 @@ import logging
 
 app = Flask(__name__)
 
+
 logging.basicConfig(level=logging.INFO)
 sessionStorage = {}
 
@@ -18,14 +19,14 @@ def main():
         }
     }
     handle_dialog(request.json, response)
+
     logging.info(f'Response:  {response!r}')
     return jsonify(response)
 
 
 def handle_dialog(req, res):
     user_id = req['session']['user_id']
-    if user_id not in sessionStorage:
-        sessionStorage[user_id] = {'rabbit': False}
+
     if req['session']['new']:
         sessionStorage[user_id] = {
             'suggests': [
@@ -37,41 +38,19 @@ def handle_dialog(req, res):
         res['response']['text'] = 'Привет! Купи слона!'
         res['response']['buttons'] = get_suggests(user_id)
         return
-
-    affirmative_responses = [
+    if req['request']['original_utterance'].lower() in [
         'ладно',
         'куплю',
         'покупаю',
-        'хорошо',
-        'я покупаю',
-        'я куплю'
-    ]
-
-    if req['request']['original_utterance'].lower() in affirmative_responses:
-        res['response']['text'] = 'Слона можно найти на Яндекс.Маркете! Хотите купить кролика?'
-        res['response']['buttons'] = [
-            {"title": "Да, куплю кролика", "hide": True},
-            {"title": "Нет", "hide": True}
-        ]
-        sessionStorage[user_id]['rabbit'] = True
+        'хорошо'
+    ]:
+        res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
+        res['response']['end_session'] = True
         return
-
-    if 'rabbit' in sessionStorage[user_id] and sessionStorage[user_id]['rabbit']:
-        if req['request']['original_utterance'].lower() == 'да, куплю кролика':
-            res['response']['text'] = 'Отлично! Купите кролика на Яндекс.Маркете!'
-            res['response']['end_session'] = True
-            del sessionStorage[user_id]['rabbit']
-
-        elif req['request']['original_utterance'].lower() == 'нет':
-            res['response']['text'] = 'Хорошо, если передумаете, дайте знать!'
-            res['response']['end_session'] = True
-            del sessionStorage[user_id]['rabbit']
-            return
 
     res['response']['text'] = \
         f"Все говорят '{req['request']['original_utterance']}', а ты купи слона!"
     res['response']['buttons'] = get_suggests(user_id)
-
 
 def get_suggests(user_id):
     session = sessionStorage[user_id]
