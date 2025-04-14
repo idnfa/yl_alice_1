@@ -4,7 +4,7 @@
   "description": "A simple Node app built on fastify, instantly up and running.",
   "main": "server.js",
   "scripts": {
-    "start": "python3 11.py"
+    "start": "python3 flask_app.py"
   },
   "dependencies": {
     "fastify": "^4.21.0",
